@@ -25,7 +25,7 @@
       <div id="loggedin">
         <div id="user-profile">
         </div>
-        <div id="oauth">
+        <div id="user-playlists">
         </div>
         <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
       </div>
@@ -51,12 +51,9 @@
       </div>
     </script>
 
-    <script id="oauth-template" type="text/x-handlebars-template">
-      <h2>oAuth info</h2>
-      <dl class="dl-horizontal">
-        <dt>Access token</dt><dd class="text-overflow">{{access_token}}</dd>
-        <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}></dd>
-      </dl>
+    <script id="user-playlists-template" type="text/x-handlebars-template">
+      <h1>Playlists</h1>
+      {{#list playlists.items}} <a href="{{external_urls.spotify}}">{{name}}</a> {{/list}}
     </script>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
@@ -78,15 +75,27 @@
           return hashParams;
         }
 
+        Handlebars.registerHelper('list', function(items, options) {
+          var out = "<ul>";
+
+          for(var i=0, l=items.length; i<l; i++) {
+            out = out + "<li>" + options.fn(items[i]) + "</li>";
+          }
+
+          return out + "</ul>";
+        });
+
         var userProfileSource = document.getElementById('user-profile-template').innerHTML,
             userProfileTemplate = Handlebars.compile(userProfileSource),
             userProfilePlaceholder = document.getElementById('user-profile');
 
-        var oauthSource = document.getElementById('oauth-template').innerHTML,
-            oauthTemplate = Handlebars.compile(oauthSource),
-            oauthPlaceholder = document.getElementById('oauth');
+        var userPlaylistsSource = document.getElementById('user-playlists-template').innerHTML,
+            userPlaylistsTemplate = Handlebars.compile(userPlaylistsSource),
+            userPlaylistsPlaceholder = document.getElementById('user-playlists');
 
         var params = getHashParams();
+
+        console.log(params);
 
         var access_token = params.access_token,
             refresh_token = params.refresh_token,
@@ -96,11 +105,6 @@
           alert('There was an error during the authentication');
         } else {
           if (access_token) {
-            // render oauth info
-            oauthPlaceholder.innerHTML = oauthTemplate({
-              access_token: access_token,
-              refresh_token: refresh_token
-            });
 
             $.ajax({
                 url: 'https://api.spotify.com/v1/me',
@@ -108,12 +112,30 @@
                   'Authorization': 'Bearer ' + access_token
                 },
                 success: function(response) {
+                  console.log(response);
                   userProfilePlaceholder.innerHTML = userProfileTemplate(response);
 
                   $('#login').hide();
                   $('#loggedin').show();
                 }
             });
+
+            $.ajax({
+                url: 'https://api.spotify.com/v1/me/playlists',
+                headers: {
+                  'Authorization': 'Bearer ' + access_token
+                },
+                success: function(response) {
+                  console.log(response);
+                  var playlists = {
+                    playlists: response
+                  }
+                  userPlaylistsPlaceholder.innerHTML = userPlaylistsTemplate(playlists);
+                }
+            });
+
+
+
           } else {
               // render initial screen
               $('#login').show();
