@@ -1,12 +1,12 @@
 function tree(scene) {
 
   var tree = new Tree({
-          "seed": 262,
+          "seed": 0,
           "segments": 6,
           "levels": 5,
           "vMultiplier": 2.36,
           "twigScale": 0.39,
-          "initalBranchLength": 0.49,
+          "initalBranchLength": 3.49,
           "lengthFalloffFactor": 0.85,
           "lengthFalloffPower": 0.99,
           "clumpMax": 0.454,
@@ -58,8 +58,13 @@ function tree(scene) {
   var treeMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
   treeMesh = new THREE.Mesh(treeGeometry, treeMaterial);
   treeMesh.scale.set(100, 100, 100);
+  treeMesh.position.y = -400;
+  treeMesh.position.z = -100;
   scene.add(treeMesh);
 
+
+  console.log("Twig Vertices");
+  console.log(tree.vertsTwig);
 
   var twigGeometry = new THREE.Geometry();
 
@@ -74,8 +79,10 @@ function tree(scene) {
   var twigMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
   twigMesh = new THREE.Mesh(twigGeometry, twigMaterial);
   twigMesh.scale.set(100, 100, 100);
-  //scene.add(twigMesh);
+  // scene.add(twigMesh);
 
+
+  return tree;
 }
 
 
@@ -86,7 +93,7 @@ function graphics(playlists) {
 	var scene = new THREE.Scene();
 
 	var ratio = canvas.width / canvas.height;
-	var camera = new THREE.PerspectiveCamera(75, ratio, 0.1, 1000);
+	var camera = new THREE.PerspectiveCamera(75, ratio, 1, 10000);
 
 	var renderer = new THREE.WebGLRenderer({canvas: canvas, preserveDrawingBuffer: true, antialias: true });
 	renderer.setSize(canvas.width, canvas.height);
@@ -100,8 +107,13 @@ function graphics(playlists) {
   pointLight.position.set(0, 100, 90);
   scene.add(pointLight);
 
-  camera.position.set(0, 0, 500);
+  camera.position.set(0, 0, 900);
 
+
+  var t = tree(scene);
+
+
+  // Text properties
 	var height = 20;
 	var size = 40;
 	var hover = 30;
@@ -134,22 +146,32 @@ function graphics(playlists) {
         bevelThickness: bevelThickness,
         bevelSize: bevelSize,
         bevelEnabled: bevelEnabled,
-        material: 0,
+        material: 0, 
         extrudeMaterial: 1
       });
 
       playlist.mesh = new THREE.Mesh(playlist.geometry, textMaterial);
 
-      playlist.mesh.position.y = i * 50 - 200;
-      playlist.mesh.position.x = -500;
+      var position = t.vertsTwig[Math.floor(Math.random() * t.vertsTwig.length)];
+      console.log(position);
+      // Add the playlist as a twig on the tree
+      // playlist.mesh.position.set(position[0] * 100, position[1] * 100, position[2] * 100);
+
+      playlist.mesh.startPosition = {};
+
+      // playlist.mesh.startPosition.y = Math.random() * 300 + 10;
+      playlist.mesh.startPosition.x = Math.sin(Math.random() * 2 * Math.PI) * Math.random() * 900 + 100;
+      playlist.mesh.startPosition.z = Math.cos(Math.random() * 2 * Math.PI) * Math.random() * 900 + 100;
+
+      // playlist.mesh.position.y = i * 50 - 200;
+      // playlist.mesh.position.x = -500;
+
+
 
       scene.add(playlist.mesh);
     }
 
 	});
-
-
-  tree(scene);
 
 
 	var clock = new THREE.Clock();
@@ -171,6 +193,17 @@ function graphics(playlists) {
 		// }
 
 		// camera.position.z -= 10 * deltaTime;
+
+    for (var i = 0; i < playlists.length; i++) {
+      var x = playlists[i].mesh.startPosition.x;
+      var z = playlists[i].mesh.startPosition.z;
+      playlists[i].mesh.position.x = -(x * Math.cos(ROTATION_SPEED * clock.getElapsedTime() / 15) - z * Math.sin(ROTATION_SPEED * clock.getElapsedTime() / 15));
+      playlists[i].mesh.position.z = (x * Math.sin(ROTATION_SPEED * clock.getElapsedTime() / 15) + z * Math.cos(ROTATION_SPEED * clock.getElapsedTime() / 15));
+      // playlists[i].mesh.position.x = Math.sin(clock.getElapsedTime()) * 50;
+      // playlists[i].mesh.position.z = Math.cos(clock.getElapsedTime()) * 50;
+    }
+
+    treeMesh.rotation.y += ROTATION_SPEED * deltaTime / 5;
 
     pointLight.position.x = Math.sin(clock.getElapsedTime()) * 300;
 
