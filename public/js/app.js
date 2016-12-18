@@ -69,6 +69,7 @@
             var playlists = {
               playlists: response
             }
+            graphics(response.items);
             userPlaylistsPlaceholder.innerHTML = userPlaylistsTemplate(playlists);
           }
       });
@@ -82,8 +83,5 @@
     }
 
   }
-
-  
-  graphics();
 
 })();
