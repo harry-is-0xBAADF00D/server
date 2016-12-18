@@ -1,3 +1,84 @@
+function tree(scene) {
+
+  var tree = new Tree({
+          "seed": 262,
+          "segments": 6,
+          "levels": 5,
+          "vMultiplier": 2.36,
+          "twigScale": 0.39,
+          "initalBranchLength": 0.49,
+          "lengthFalloffFactor": 0.85,
+          "lengthFalloffPower": 0.99,
+          "clumpMax": 0.454,
+          "clumpMin": 0.404,
+          "branchFactor": 2.45,
+          "dropAmount": -0.1,
+          "growAmount": 0.235,
+          "sweepAmount": 0.01,
+          "maxRadius": 0.139,
+          "climbRate": 0.371,
+          "trunkKink": 0.093,
+          "treeSteps": 5,
+          "taperRate": 0.947,
+          "radiusFalloffRate": 0.73,
+          "twistRate": 3.02,
+          "trunkLength": 2.4
+      });
+
+  // var treeMesh = {
+  //     Positions: Tree.flattenArray(tree.verts),
+  //     Normals: Tree.flattenArray(tree.normals),
+  //     UV: Tree.flattenArray(tree.UV),
+  //     Faces: Tree.flattenArray(tree.faces),
+  // };
+
+  console.log("Vertex Data: ")
+  console.log(tree.verts);
+
+  console.log("Face Data: ");
+  console.log(tree.faces);
+
+  // var twigMesh = {
+  //     Positions: Tree.flattenArray(tree.vertsTwig),
+  //     Normals: Tree.flattenArray(tree.normalsTwig),
+  //     UV: Tree.flattenArray(tree.uvsTwig),
+  //     Faces: Tree.flattenArray(tree.facesTwig),
+  // };
+
+  var treeGeometry = new THREE.Geometry();
+
+  tree.verts.forEach(function(vert) {
+    treeGeometry.vertices.push(new THREE.Vector3(vert[0], vert[1], vert[2]));
+  });
+
+  tree.faces.forEach(function(face) {
+    treeGeometry.faces.push(new THREE.Face3(face[0], face[1], face[2]));
+  });
+
+  var treeMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+  treeMesh = new THREE.Mesh(treeGeometry, treeMaterial);
+  treeMesh.scale.set(100, 100, 100);
+  scene.add(treeMesh);
+
+
+  var twigGeometry = new THREE.Geometry();
+
+  tree.vertsTwig.forEach(function(vert) {
+    twigGeometry.vertices.push(new THREE.Vector3(vert[0], vert[1], vert[2]));
+  });
+
+  tree.facesTwig.forEach(function(face) {
+    twigGeometry.faces.push(new THREE.Face3(face[0], face[1], face[2]));
+  });
+
+  var twigMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+  twigMesh = new THREE.Mesh(twigGeometry, twigMaterial);
+  twigMesh.scale.set(100, 100, 100);
+  //scene.add(twigMesh);
+
+}
+
+
 function graphics(playlists) {
 
 	var canvas = document.getElementById("playlistsCanvas");
@@ -68,6 +149,9 @@ function graphics(playlists) {
 	});
 
 
+  tree(scene);
+
+
 	var clock = new THREE.Clock();
 
 	var deltaTime = 0;
@@ -90,7 +174,7 @@ function graphics(playlists) {
 
     pointLight.position.x = Math.sin(clock.getElapsedTime()) * 300;
 
-    camera.position.z = -Math.tan(clock.getElapsedTime() / 2) * 10 + 500;
+    // camera.position.z = -Math.tan(clock.getElapsedTime() / 2) * 10 + 500;
 
     renderer.clear();
 		renderer.render(scene, camera);
@@ -100,3 +184,4 @@ function graphics(playlists) {
 
 	render();
 }
+
